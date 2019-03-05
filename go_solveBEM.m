@@ -77,7 +77,7 @@ if opts.eeg
         id = find(type==2);
         loc = hdr.orig.chs(id(1)).eeg_loc(:,2);
         els.elecpos = cat(1,els.elecpos,loc');
-        els.tra = ([eye(length(elecs.label)) -1*ones(length(elecs.label),1)]);
+        els.w = ([eye(length(elecs.label)) -1*ones(length(elecs.label),1)]);
     end
     bem = solve_electrodes(surf,bem,els);
 end
@@ -103,7 +103,7 @@ L = solve_fields(sources,bem);
 % Pack up results
 if opts.meg
     if isfield(coils,'w')
-        fwd.eeg = coils.w*L.eeg';
+        fwd.meg = coils.w*L.meg';
     else
         fwd.meg = L.meg';
     end
