@@ -10,9 +10,8 @@ end
 
 % do some sanity checks just to make sure options have been correctly set
 if ~isfield(opts,'data')
-    if ~isfield(opts,'coils') && ~isfield(opts,'coils')
-        error('Please provide a dataset location using opts.data, or specify a structure containing electrode or coil locations')
-    end
+    if ~isfield(opts,'coils') && 
+    error('Please provide a dataset location using opts.data')
 end
 
 switch length(meshes)
@@ -51,42 +50,35 @@ bem = solve_bem(surf,opts.cond);
 
 % Add in the coil part of the solution in (for MEG)
 if opts.meg
-    if isfield(opts,'data')
-        if isfield(opts,'coilaccuracy')
-            sens = ft_read_sens(opts.data,'senstype','meg','coilaccuracy',opts.coilaccuracy);
-        else
-            sens = ft_read_sens(opts.data,'senstype','meg');
-        end
-        sens = ft_convert_units(sens,'m');
-        coils.r = sens.coilpos;
-        coils.o = sens.coilori;
-        if isfield(sens,'tra')
-            coils.w = sens.tra;
-        end
+    if isfield(opts,'coilaccuracy')
+        sens = ft_read_sens(opts.data,'senstype','meg','coilaccuracy',opts.coilaccuracy);
     else
-        coils = opt.coils;
+        sens = ft_read_sens(opts.data,'senstype','meg');
+    end
+    sens = ft_convert_units(sens,'m');
+    coils.r = sens.coilpos;
+    coils.o = sens.coilori;
+    if isfield(sens,'tra')
+        coils.w = sens.tra;
     end
     bem = solve_coils(surf,bem,coils);
 end
 
 % Add in the electrodes part of the solution in (for EEG)
 if opts.eeg
+    warning('EEG solver not verified yet, proceed with caution!')
     opts.eegref = ft_getopt(opts,'eegref',0);
-    if isfield(opts,'data')
-        elecs = ft_read_sens(opts.data,'senstype','eeg');            %% locations in cm
-        elecs = ft_convert_units(elecs,'m');                          %% locations in m
-        els.elecpos = elecs.chanpos;
-        if opts.eegref
-            fprintf('Adding EEG reference channel and balancing matrix\n');
-            hdr = ft_read_header(opts.data);
-            type = [hdr.orig.chs.kind];
-            id = find(type==2);
-            loc = hdr.orig.chs(id(1)).eeg_loc(:,2);
-            els.elecpos = cat(1,els.elecpos,loc');
-            els.w = ([eye(length(elecs.label)) -1*ones(length(elecs.label),1)]);
-        end
-    else
-        els = opts.els;
+    elecs = ft_read_sens(opts.data,'senstype','eeg');            %% locations in cm
+    elecs = ft_convert_units(elecs,'m');                          %% locations in m
+    els.elecpos = elecs.chanpos;
+    if opts.eegref
+        fprintf('Adding EEG reference channel and balancing matrix\n');
+        hdr = ft_read_header(opts.data);
+        type = [hdr.orig.chs.kind];
+        id = find(type==2);
+        loc = hdr.orig.chs(id(1)).eeg_loc(:,2);
+        els.elecpos = cat(1,els.elecpos,loc');
+        els.w = ([eye(length(elecs.label)) -1*ones(length(elecs.label),1)]);
     end
     bem = solve_electrodes(surf,bem,els);
 end
