@@ -57,7 +57,7 @@ if opts.meg
     sens = ft_convert_units(sens,'m');
     coils.r = sens.coilpos;
     coils.o = sens.coilori;
-    if isfield(sens,'tra');
+    if isfield(sens,'tra')
         coils.w = sens.tra;
     end
     bem = solve_coils(surf,bem,coils);
