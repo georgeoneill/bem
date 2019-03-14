@@ -40,8 +40,13 @@ end
 
 % Here is where checking the meshing will happen (to be written)
 % Tests will include:
-%               1) is mesh 1 inside 2, which are both inside 3?
-%               2) does the solid angle of each mesh come to 4pi sr?
+%               1) does the solid angle of each mesh come to 4pi sr?
+%               2) is mesh 1 inside 2, which are both inside 3?
+%               3) more tests can come.
+opts.check_meshes = ft_getopt(opts,'check_meshes',1);
+if opts.check_meshes
+    pass = check_meshes(meshes);
+end
 
 % With all sanity checks passed, lets fill in all the surface information
 % based on just the faces and vertices alone. Then solve the geometric part
