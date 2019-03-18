@@ -38,6 +38,11 @@ if opts.eeg && length(opts.cond)==1
     error('You must have 3 boundaries for EEG solution!')
 end
 
+% FieldTrip likes to use pos/pnt/tri for mashes rather than faces/vertices
+% but all the code I have written expects the latter. This function renames
+% all the relevent items in each mesh structre to the correct name
+meshes = rename_mesh_assets(meshes);
+
 % Here is where checking the meshing will happen (to be written)
 % Tests will include:
 %               1) does the solid angle of each mesh come to 4pi sr?

@@ -1,4 +1,4 @@
-function surf = completesurfaces(meshes)
+function surf = complete_surfaces(meshes)
 
 % Function to do some bookeeping on the previously generated surfaces,
 % assumes that these are correct (ie normals point outwards, meshes have a
