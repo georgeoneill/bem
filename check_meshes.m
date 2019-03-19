@@ -1,83 +1,71 @@
-function pass = check_meshes(meshes)
+function [pass meshes]= check_meshes(meshes,test)
 
-% Test 1: are the surfaces complete?
-fprintf('Checking boundary mesh integrity: ')
-for ii = 1:length(meshes)
-    
-    sr = get_solids_fast(meshes(ii).vertices,meshes(ii).faces);
-    if abs(sr - (2*pi)) < 1e-5
-        tmp_pass(ii) = 1;
-    else
-        tmp_pass(ii) = 0;
-    end
-    
-end
-pass(1) = sum(tmp_pass) == length(meshes);
-if pass(1)
-    fprintf('OK!\n')
-else
-    fprintf('FAIL\n')
-    error('One or more boundaries are not completely closed surfaces');
+if nargin==1
+    test=1;
 end
 
-% Test 2: Is surface 1 entirely within 2, which itself is in 3?
-% Obvs, skip the test is there is a single layer BEM.
-if length(meshes) > 1
-    fprintf('Checking boundaries are entirely nested within each other: ')
-    clear tmp_pass
-    for ii = 1:length(meshes)-1
-        fro = meshes(ii+1);
-        to = meshes(ii);
-        clear sr
-        sr = get_solids_fast(fro.vertices,fro.faces,to.vertices);
-        out = not(abs(sr - (2*pi)) < 1e5);
-        tmp_pass(ii) = not(sum(out));
-    end
-    pass(2) = sum(tmp_pass) == length(meshes)-1;
-    if pass(2)
-        fprintf('OK!\n')
-    else
-        fprintf('FAIL\n')
-        error('One or more are boundaries are not nested properly.');
-    end
-else
-    pass(2) = 1;
+switch test
+    case 1
+        
+        % Test 1: are the surfaces complete?
+        fprintf('Checking boundary mesh integrity: ')
+        for ii = 1:length(meshes)
+            
+            sr = get_solids_fast(meshes(ii).vertices,meshes(ii).faces);
+            if abs(sr - (2*pi)) < 1e-6
+                tmp_pass(ii) = 1;
+            elseif abs(sr + (2*pi)) < 1e-6
+                tmp_pass(ii) = -1;
+            else
+                tmp_pass(ii) = 0;
+            end
+        end
+        
+        
+        if tmp_pass == 1
+            fprintf('OK!\n')
+            pass = 1;
+        elseif tmp_pass == -1
+            fprintf('Inside out: correcting!\n')
+            tmp = meshes.vertices;
+            tmp(:,3) = meshes.vertices(:,2);
+            tmp(:,2) = meshes.vertices(:,3);
+            meshes.vertices = tmp;
+            pass = 1;
+        else
+            fprintf('FAIL\n')
+            error('Boundaries are not completely closed surfaces, or inside out!');
+        end
+        
+    case 2
+        
+        % Test 2: Is surface 1 entirely within 2, which itself is in 3?
+        % Obvs, skip the test is there is a single layer BEM.
+        if length(meshes) > 1
+            fprintf('Checking boundaries are entirely nested within each other: ')
+            clear tmp_pass
+            for ii = 1:length(meshes)-1
+                fro = meshes(ii+1);
+                to = meshes(ii);
+                clear sr
+                sr = get_solids_fast(fro.vertices,fro.faces,to.vertices);
+                in = (abs(sr - (2*pi)) < 1e-4);
+                tmp_pass(ii) = sum(in) == numel(to.vertices)./3;
+            end
+            pass = sum(tmp_pass) == length(meshes)-1;
+            if pass
+                fprintf('OK!\n')
+            else
+                fprintf('FAIL\n')
+                error('One or more are boundaries are not nested properly');
+            end
+        else
+            pass = 1;
+        end
+        
 end
 
-
 end
-
-% function [tot_solids, solids]= get_solids_slow(verts,faces,varargin)
-%
-% if nargin==1
-%     fros = varargin{1};
-%     npoints = length(fros);
-% else
-%     fros = mean(verts,1);
-%     npoints = 1;
-% end
-% solids = zeros(1,length(faces));
-%
-% for ii = 1:length(faces)
-%     tri_rrs = verts(faces(ii,:),:);
-%     v1 = fros - tri_rrs(1,:);
-%     v2 = fros - tri_rrs(2,:);
-%     v3 = fros - tri_rrs(3,:);
-%     triples = sum(fast_cross(v1,v2).*v3,2);
-%     l1 = vnorm(v1,2);
-%     l2 = vnorm(v2,2);
-%     l3 = vnorm(v3,2);
-%     ss = l1.*l2.*l3;
-%     s1 = l3.*sum(v1.*v2,2);
-%     s2 = l2.*sum(v1.*v3,2);
-%     s3 = l1.*sum(v2.*v3,2);
-%     ss = ss+s1+s2+s3;
-%     solids(ii) = bsxfun(@atan2,triples,ss);
-% end
-%
-% tot_solids = sum(-1*solids);
-%
-% end
 
 function [solids] = get_solids_fast(verts,faces,varargin)
 

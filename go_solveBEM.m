@@ -45,12 +45,40 @@ meshes = rename_mesh_assets(meshes);
 
 % Here is where checking the meshing will happen (to be written)
 % Tests will include:
-%               1) does the solid angle of each mesh come to 4pi sr?
+%               1) does the solid angle of each mesh come to +4pi sr?
 %               2) is mesh 1 inside 2, which are both inside 3?
 %               3) more tests can come.
 opts.check_meshes = ft_getopt(opts,'check_meshes',1);
 if opts.check_meshes
-    pass = check_meshes(meshes);
+    for ii = 1:length(meshes)
+        try
+            [~, meshes(ii)] = check_meshes(meshes(ii),1);
+        catch
+            % Will try to repair meshes in case of failure
+            fprintf('Initial sanity check of %s mesh failed, repairing...',meshes(ii).name)
+            if isempty(which('meshcheckrepair'))
+                ft_hastoolbox('iso2mesh',1)
+            end
+            [meshes(ii).vertices, meshes(ii).faces] = meshcheckrepair(meshes(ii).vertices, meshes(ii).faces);
+            disp('checking again')
+            check_meshes(meshes(ii),1);
+        end
+    end
+    
+    if length(meshes) > 1
+        % check meshes are in the correct order, if not, flip!
+        try
+            check_meshes(meshes,2);
+        catch
+            disp('meshes may be nested in the wrong order, reversing...')
+            tmp = meshes;
+            meshes(1) = tmp(3);
+            meshes(2) = tmp(2);
+            meshes(3) = tmp(1);
+            check_meshes(meshes,2);
+        end
+    end
+    
 end
 
 % With all sanity checks passed, lets fill in all the surface information

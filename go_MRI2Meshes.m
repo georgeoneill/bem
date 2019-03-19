@@ -21,30 +21,30 @@ switch lower(opts.method)
         segmentedmri  = ft_volumesegment(cfg, mri);
         
         cfg=[];
-        cfg.tissue={'brain','skull','scalp'};
+        cfg.tissue={'scalp','skull','brain'};
         cfg.numvertices = [2500 2500 2500];
         bnd=ft_prepare_mesh(cfg,segmentedmri);
         
         try
-            meshes(1).pnt =  bnd(1).pos;
+            meshes(1).pnt =  bnd(3).pos;
             meshes(2).pnt =  bnd(2).pos;
-            meshes(3).pnt =  bnd(3).pos;
+            meshes(3).pnt =  bnd(1).pos;
         catch
-            meshes(1).pnt =  bnd(1).pnt;
+            meshes(1).pnt =  bnd(3).pnt;
             meshes(2).pnt =  bnd(2).pnt;
-            meshes(3).pnt =  bnd(3).pnt;
+            meshes(3).pnt =  bnd(1).pnt;
         end
-        meshes(1).tri = bnd(1).tri;
+        meshes(1).tri = bnd(3).tri;
         meshes(2).tri = bnd(2).tri;
-        meshes(3).tri = bnd(3).tri;
+        meshes(3).tri = bnd(1).tri;
         
-        meshes(1).name = 'scalp';
+        meshes(1).name = 'iskull';
         meshes(2).name = 'oskull';
-        meshes(3).name = 'iskull';
+        meshes(3).name = 'scalp';
         
-        meshes(1).unit = bnd(1).unit;
+        meshes(1).unit = bnd(3).unit;
         meshes(2).unit = bnd(2).unit;
-        meshes(3).unit = bnd(3).unit;
+        meshes(3).unit = bnd(1).unit;
         
     case 'spm'
         
@@ -90,10 +90,10 @@ switch lower(opts.method)
         tmp = mesh_iskull_tmp.vertices;
         tmp1 = ft_warp_apply(mri.head2headOrig,tmp);
         
-        meshes(3).tri = mesh_iskull_tmp.faces;
-        meshes(3).pnt = tmp1;
-        meshes(3).name = 'iskull';
-        meshes(3).unit = 'mm';
+        meshes(1).tri = mesh_iskull_tmp.faces;
+        meshes(1).pnt = tmp1;
+        meshes(1).name = 'iskull';
+        meshes(1).unit = 'mm';
         
         tmp = mesh_oskull_tmp.vertices;
         tmp1 = ft_warp_apply(mri.head2headOrig,tmp);
@@ -106,10 +106,10 @@ switch lower(opts.method)
         tmp = mesh_scalp_tmp.vertices;
         tmp1 = ft_warp_apply(mri.head2headOrig,tmp);
         
-        meshes(1).tri = mesh_scalp_tmp.faces;
-        meshes(1).pnt = tmp1;
-        meshes(1).name = 'scalp';
-        meshes(1).unit = 'mm';
+        meshes(3).tri = mesh_scalp_tmp.faces;
+        meshes(3).pnt = tmp1;
+        meshes(3).name = 'scalp';
+        meshes(3).unit = 'mm';
         
         % flush all SPM temp files when done
         if ispc
