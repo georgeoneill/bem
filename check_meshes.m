@@ -5,36 +5,43 @@ if nargin==1
 end
 
 switch test
+    
+    case 0 % Silent running version of test 1, are triangles correctly oriented?
+        
+        for ii = 1:length(meshes)
+            sr = get_solids_fast(meshes(ii).vertices,meshes(ii).faces);
+            if abs(sr - (2*pi)) < 1e-6
+                pass(ii) = 1;
+            elseif abs(sr + (2*pi)) < 1e-6
+                pass(ii) = -1;
+            else
+                pass(ii) = 0;
+            end
+        end
+        
     case 1
         
         % Test 1: are the surfaces complete?
         fprintf('Checking boundary mesh integrity: ')
-        for ii = 1:length(meshes)
-            
-            sr = get_solids_fast(meshes(ii).vertices,meshes(ii).faces);
-            if abs(sr - (2*pi)) < 1e-6
-                tmp_pass(ii) = 1;
-            elseif abs(sr + (2*pi)) < 1e-6
-                tmp_pass(ii) = -1;
-            else
-                tmp_pass(ii) = 0;
-            end
-        end
-        
-        
+        tmp_pass = check_meshes(meshes,0);
         if tmp_pass == 1
             fprintf('OK!\n')
             pass = 1;
         elseif tmp_pass == -1
-            fprintf('Inside out: correcting!\n')
-            tmp = meshes.vertices;
-            tmp(:,3) = meshes.vertices(:,2);
-            tmp(:,2) = meshes.vertices(:,3);
-            meshes.vertices = tmp;
-            pass = 1;
+            fprintf('inside out: correcting: ')
+            ftmp = meshes.faces;
+            meshes.faces = ftmp(:,[1 3 2]);
+            tmp_pass_2 = check_meshes(meshes,0);
+            if tmp_pass_2~=1
+                fprintf('FAIL\n')
+                error('Boundaries are not completely closed surfaces!');
+            else
+                fprintf('OK!\n')
+                pass = 1;
+            end
         else
             fprintf('FAIL\n')
-            error('Boundaries are not completely closed surfaces, or inside out!');
+            error('Boundaries are not completely closed surfaces!');
         end
         
     case 2

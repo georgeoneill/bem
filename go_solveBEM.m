@@ -102,7 +102,7 @@ if opts.meg
             coils.w = sens.tra;
         end
     else
-        coils = opt.coils;
+        coils = opts.coils;
     end
     bem = solve_coils(surf,bem,coils);
 end
