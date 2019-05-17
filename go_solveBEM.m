@@ -89,7 +89,7 @@ bem = solve_bem(surf,opts.cond);
 
 % Add in the coil part of the solution in (for MEG)
 if opts.meg
-    if isfield(opts,'data')
+    if isfield(opts,'data') && ~isfield(opts,'coils')
         if isfield(opts,'coilaccuracy')
             sens = ft_read_sens(opts.data,'senstype','meg','coilaccuracy',opts.coilaccuracy);
         else
@@ -110,7 +110,7 @@ end
 % Add in the electrodes part of the solution in (for EEG)
 if opts.eeg
     opts.eegref = ft_getopt(opts,'eegref',0);
-    if isfield(opts,'data')
+    if isfield(opts,'data') && ~isfield(opts,'els')
         elecs = ft_read_sens(opts.data,'senstype','eeg');            %% locations in cm
         elecs = ft_convert_units(elecs,'m');                          %% locations in m
         els.elecpos = elecs.chanpos;
