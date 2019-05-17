@@ -36,6 +36,13 @@ for ii = 1:nsurfs
         if ii == jj
             tmp = correct_auto_elements(surf(ii),tmp);
         end
+        
+        % check for NaNs or Infs.
+        chk = isnan(tmp) | isinf(tmp);
+        if sum(chk(:)) > 0
+            error('NaNs or Infs detected in potential coefficients, check meshes!')
+        end
+        
         coeff((offsets(ii)+1):(offsets(ii+1)),(offsets(jj)+1):(offsets(jj+1))) = tmp;
     end
 

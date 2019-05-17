@@ -12,7 +12,7 @@ opts.units  = ft_getopt(opts,'units','m');
 
 switch lower(opts.method)
     case 'fieldtrip'
-        warning('method not yet checked, hold tight!')
+
         
         mri = ft_read_mri(mripath);
         
