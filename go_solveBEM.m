@@ -1,4 +1,4 @@
-function fwd = go_solveBEM(opts,meshes,sources)
+function fwd = go_solveBEM(opts,meshes,sources,varargin)
 
 % check fieldtrip has been initialised (or we will run into trouble later)
 ft = which('ft_defaults');
@@ -10,7 +10,7 @@ end
 
 % do some sanity checks just to make sure options have been correctly set
 if ~isfield(opts,'data')
-    if ~isfield(opts,'coils') && ~isfield(opts,'coils')
+    if ~isfield(opts,'coils') && ~isfield(opts,'els')
         error('Please provide a dataset location using opts.data, or specify a structure containing electrode or coil locations')
     end
 end
@@ -83,9 +83,13 @@ end
 
 % With all sanity checks passed, lets fill in all the surface information
 % based on just the faces and vertices alone. Then solve the geometric part
-% of the BEM common to both EEG and MEG
+% of the BEM common to both EEG and MEG (or skip if already precomputed)
 surf = complete_surfaces(meshes);
-bem = solve_bem(surf,opts.cond);
+if nargin==4
+    bem = varargin{1};
+else
+    bem = solve_bem(surf,opts.cond);
+end
 
 % Add in the coil part of the solution in (for MEG)
 if opts.meg
