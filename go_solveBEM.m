@@ -1,4 +1,4 @@
-function fwd = go_solveBEM(opts,meshes,sources,varargin)
+function [fwd bem] = go_solveBEM(opts,meshes,sources,varargin)
 
 % check fieldtrip has been initialised (or we will run into trouble later)
 ft = which('ft_defaults');

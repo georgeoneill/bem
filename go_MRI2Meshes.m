@@ -1,4 +1,4 @@
-function meshes = go_MRI2Meshes(opts,mripath)
+function [meshes, varargout] = go_MRI2Meshes(opts,mripath)
 
 opts.method = ft_getopt(opts,'method','fieldtrip');
 opts.units  = ft_getopt(opts,'units','m');
@@ -19,6 +19,7 @@ switch lower(opts.method)
         cfg           = [];
         cfg.output    = {'brain','skull','scalp'};
         segmentedmri  = ft_volumesegment(cfg, mri);
+        varargout{1}   = segmentedmri;
         
         cfg=[];
         cfg.tissue={'scalp','skull','brain'};
